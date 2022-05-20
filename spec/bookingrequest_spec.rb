@@ -1,34 +1,87 @@
 describe BookingRequest do
-  before(:each) { DatabaseConnection.setup.query("INSERT INTO users (id, username, email, password)
+  before(:each) do 
+    DatabaseConnection.setup.query(
+    "INSERT INTO users (id, username, email, password)
     VALUES($1, $2, $3, $4);", 
-    [1, 'username', 'email', 'encrypted_pass']) }
+    [1, 'username', 'email', 'encrypted_pass'])
+
+    DatabaseConnection.setup.query(
+      "INSERT INTO users (id, username, email, password)
+      VALUES($1, $2, $3, $4);", 
+      [2, 'username2', 'email2', 'encrypted_pass2'])
+
+    DatabaseConnection.setup.query(
+      "INSERT INTO spaces (id, name, description, price, user_id)
+      VALUES($1, $2, $3, $4, $5);", 
+      [1, 'spacename', 'spacedesc', 50, 1])
+
+    DatabaseConnection.setup.query(
+      "INSERT INTO spaces (id, name, description, price, user_id)
+      VALUES($1, $2, $3, $4, $5);", 
+      [2, 'spacename', 'description', 50, 2])
+
+    DatabaseConnection.setup.query(
+      "INSERT INTO available_dates (space_id, date)
+      VALUES($1, $2);", 
+      [1, '2023-05-17'])
+
+    DatabaseConnection.setup.query(
+      "INSERT INTO available_dates (space_id, date)
+      VALUES($1, $2);", 
+      [2, '2023-05-17'])
+  end
+
   describe '.create' do
     it 'should add a booking request to the database' do
-      expect(BookingRequest.create(space_id: 1, date: '2022-05-17', guest_id: 1)).to be_an_instance_of(BookingRequest).and have_attributes(space_id: '1', date: '2022-05-17', guest_id: '1')
+      expect(BookingRequest.create(
+        space_id: 1,
+        date: '2023-05-17',
+        guest_id: 1
+      )).to be_an_instance_of(BookingRequest).and have_attributes(
+          space_id: '1',
+          date: '2023-05-17',
+          guest_id: '1'
+        )
     end
   end
 
   describe '.find' do
     it "selects specific booking request by id" do
-      booking_request = BookingRequest.create(space_id: '1', date: '2022-05-17', guest_id: 1)
+      booking_request = BookingRequest.create(
+        space_id: 1,
+        date: '2023-05-17',
+        guest_id: 1
+      )
       found_booking_request = BookingRequest.find(id: booking_request.id)
       
-      expect(booking_request).to be_an_instance_of(BookingRequest).and have_attributes(space_id: '1', date: '2022-05-17', guest_id: '1')
+      expect(booking_request).to be_an_instance_of(BookingRequest).and have_attributes(
+        space_id: '1',
+        date: '2023-05-17',
+        guest_id: '1'
+      )
     end
   end
 
   describe '#approve' do
     it 'responds to booking requests by approving them' do
-      booking_request = BookingRequest.create(space_id: 1, date: '2022-05-17', guest_id: 1)
+      booking_request = BookingRequest.create(
+        space_id: 1,
+        date: '2023-05-17',
+        guest_id: 1
+      )
       approved_booking_request = BookingRequest.approve(id: booking_request.id)
-      p booking_request.id
+
       expect(approved_booking_request.approved).to eq 't'
     end
   end 
 
   describe '#reject' do
     it 'responds to booking requests by rejecting them' do
-      booking_request = BookingRequest.create(space_id: 1, date: '2022-05-17', guest_id: 1)
+      booking_request = BookingRequest.create(
+        space_id: 1,
+        date: '2023-05-17',
+        guest_id: 1
+      )
       rejected_booking_request = BookingRequest.reject(id: booking_request.id) 
 
       expect(rejected_booking_request.approved).to eq 'f'
@@ -37,15 +90,11 @@ describe BookingRequest do
 
   describe '.all_for_user' do
     it 'should return all booking requests for the logged in host user' do
-      DatabaseConnection.setup.query("INSERT INTO users (id, username, email, password)
-      VALUES($1, $2, $3, $4);", 
-      [2, 'username2', 'email2', 'encrypted_pass2'])
-
-      DatabaseConnection.setup.query("INSERT INTO spaces (id, name, description, price, user_id)
-      VALUES($1, $2, $3, $4, $5);", 
-      [1, 'spacename', 'description', 5, 2])
-
-      booking_request = BookingRequest.create(space_id: 1, date: '2022-05-17', guest_id: 1)
+      booking_request = BookingRequest.create(
+        space_id: 2,
+        date: '2023-05-17',
+        guest_id: 1
+      )
 
       space = Space.find(id: booking_request.space_id)
 

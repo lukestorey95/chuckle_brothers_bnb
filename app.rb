@@ -29,9 +29,14 @@ class ChuckleHotel < Sinatra::Base
   end
 
   post '/spaces' do
-    Space.create(name: params[:name], description: params[:description], 
-      price: params[:price], user_id: params[:user_id], available_from: params[:available_from], 
-      available_to: params[:available_to]) 
+    Space.create(
+      name: params[:name],
+      description: params[:description], 
+      price: params[:price],
+      user_id: params[:user_id],
+      available_from: params[:available_from], 
+      available_to: params[:available_to]
+    ) 
     redirect '/spaces/confirmation'
   end
 
@@ -45,7 +50,11 @@ class ChuckleHotel < Sinatra::Base
   end
   
   post '/users' do
-    user = User.create(username: params[:username], email: params[:email], password: params[:password]) 
+    user = User.create(
+      username: params[:username],
+      email: params[:email],
+      password: params[:password]
+    ) 
     session[:user_id] = user.id
     flash[:notice] = 'Thanks for signing up to Chuckle Hotel'
     redirect '/spaces'
@@ -54,11 +63,6 @@ class ChuckleHotel < Sinatra::Base
   get '/users/confirmation' do
     @user = User.all.last
     erb :'users/confirmation'
-  end
-  
-  post '/spaces' do
-    Space.create(name: params[:name], description: params[:description], price: params[:price]) 
-    redirect '/spaces/confirmation'
   end
 
   get '/spaces/:id' do 
@@ -73,8 +77,18 @@ class ChuckleHotel < Sinatra::Base
   end 
 
   post '/booking' do
-    booking_request = BookingRequest.create(date: params[:date], space_id: params[:space_id], guest_id: session[:user_id])
-    redirect "/booking/#{booking_request.id}/confirmation"
+    booking_request = BookingRequest.create(
+      date: params[:date],
+      space_id: params[:space_id],
+      guest_id: session[:user_id]
+    )
+
+    if booking_request.class == BookingRequest
+      redirect "/booking/#{booking_request.id}/confirmation"
+    else
+      flash[:notice] = "Sorry the space is not available on that day, please select a different date"
+      redirect "/spaces/#{booking_request}"
+    end
   end
 
   get '/booking/:id/confirmation' do
@@ -127,7 +141,6 @@ class ChuckleHotel < Sinatra::Base
   end
 
   get '/host/approved' do
-    p session[:last_request]
     @space = Space.find(id: BookingRequest.find(id: session[:last_request]).space_id)
     erb :'host/approved'
   end
